@@ -70,6 +70,7 @@
       <h1>拉新活动体验导航</h1>
       <p class="note">调研基准：2026-08-05。每张卡片都落到渠道、品牌和产品。按钮打开稳定的官方入口；优惠与活动以当前登录、城市、账号和库存为准。抖音、小红书、微信小程序等优先按卡片中的原生 App 搜索词进入。</p>
       <button id="export-table" class="export-table" type="button">导出表格 CSV</button>
+      <span id="cloud-state" class="save-state" role="status">正在连接共享工作区...</span>
     </header>
 
     <p class="method"><strong>分类逻辑：</strong>这四组按研究工作流排列，而不是按渠道硬切。先进入品牌和品类样本，理解陌生用户的首个购买理由；再看能否把首单变成第二次行为；随后用同一商品在不同平台和大促节点中做机制对照；最后以海外成熟做法校准规则表达和留存设计。</p>
@@ -119,11 +120,14 @@
 
     <h2>四阶段观察顺序</h2>
     <section class="stage"><ol><li>触及：从小红书 / 抖音 / B站的一个自然内容，进入品牌商品或店铺。</li><li>获客：只走到登录、授权、订阅或入会前，记录品牌拿走了什么信息、回报是什么。</li><li>首次转化：用一个试用装、小规格或英雄 SKU 加购到付款前，记录券、运费、赠品、售后和步骤数。</li><li>新人激活：第 1、7、30 天检查补货、上新、任务和服务消息是否与已看商品或消耗周期相关。</li></ol></section>
-    <footer>建议以新账号体验，并停在付款前。点击保存后，文字和截图均保存在当前浏览器；若清除浏览器网站数据，记录也会被清除。桌面端被拦截时，用卡片中的精确搜索词回到原生 App。</footer>
+    <footer>建议以新账号体验，并停在付款前。入口修改、体验记录和截图会自动同步到共享工作区；网络暂不可用时内容会暂存本机，恢复连接后继续同步。桌面端被拦截时，用卡片中的精确搜索词回到原生 App。</footer>
   </main>
   <script>
     (() => {
       const storageKey = "growth-research-notes-v2";
+      const cloudUrl = "https://whbtcyhcmzzjpqspktll.supabase.co";
+      const cloudKey = "sb_publishable_39juz05qSAKUtb7SheM3Ag_HQ7Z5iTb";
+      const cloudWorkspaceId = "growth-experience-navigation";
       const phases = [
         { key: "reach", label: "1. 触及", prompt: "内容 / 货架入口、首屏感受、为何愿意继续看" },
         { key: "capture", label: "2. 获客", prompt: "品牌索取了什么身份；给了什么回报；是否愿意授权 / 入会" },
@@ -131,14 +135,64 @@
         { key: "activation", label: "4. 新人激活", prompt: "第 1 / 7 / 30 天的触达、任务、补货或再次行动理由" }
       ];
 
-      let state = { notes: {}, customCards: {}, cardEdits: {} };
+      let state = { notes: {}, customCards: {}, cardEdits: {}, media: {} };
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey));
-        if (saved && typeof saved === "object") state = { notes: saved.notes || {}, customCards: saved.customCards || {}, cardEdits: saved.cardEdits || {} };
+        if (saved && typeof saved === "object") state = { notes: saved.notes || {}, customCards: saved.customCards || {}, cardEdits: saved.cardEdits || {}, media: saved.media || {} };
       } catch (_) { /* Keep the page usable when storage is unavailable. */ }
 
+      const cloudState = document.getElementById("cloud-state");
+      let cloudReady = false;
+      let cloudSaveTimer;
+      const normalizeState = (value) => ({
+        notes: value?.notes || {},
+        customCards: value?.customCards || {},
+        cardEdits: value?.cardEdits || {},
+        media: value?.media || {}
+      });
+      const hasWorkspaceContent = (value) => Object.values(value?.notes || {}).length || Object.values(value?.customCards || {}).some((cards) => cards.length) || Object.values(value?.cardEdits || {}).length;
+      const setCloudState = (message) => { if (cloudState) cloudState.textContent = message; };
+      const cloudHeaders = (extra = {}) => ({ apikey: cloudKey, Authorization: `Bearer ${cloudKey}`, ...extra });
+      const cloudRequest = (path, options = {}) => fetch(`${cloudUrl}${path}`, {
+        ...options,
+        headers: cloudHeaders(options.headers)
+      });
+      const saveCloudState = async () => {
+        if (!cloudReady) return;
+        setCloudState("正在保存到共享工作区...");
+        const response = await cloudRequest("/rest/v1/shared_workspaces?on_conflict=id", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
+          body: JSON.stringify({ id: cloudWorkspaceId, payload: state, updated_at: new Date().toISOString() })
+        });
+        if (!response.ok) throw new Error("cloud save failed");
+        setCloudState("已自动保存到共享工作区");
+      };
+      const scheduleCloudSave = () => {
+        if (!cloudReady) return;
+        clearTimeout(cloudSaveTimer);
+        setCloudState("编辑中，等待自动保存...");
+        cloudSaveTimer = setTimeout(() => saveCloudState().catch(() => setCloudState("云端保存失败，内容仍保留在本机")), 700);
+      };
+      const loadCloudState = async () => {
+        setCloudState("正在读取共享工作区...");
+        const response = await cloudRequest(`/rest/v1/shared_workspaces?id=eq.${encodeURIComponent(cloudWorkspaceId)}&select=payload`);
+        if (!response.ok) throw new Error("cloud load failed");
+        const [remote] = await response.json();
+        const localState = state;
+        const remoteState = normalizeState(remote?.payload);
+        if (hasWorkspaceContent(remoteState)) state = remoteState;
+        cloudReady = true;
+        if (!hasWorkspaceContent(remoteState) && hasWorkspaceContent(localState)) await saveCloudState();
+        else setCloudState("共享工作区已同步");
+      };
+
       const persist = () => {
-        try { localStorage.setItem(storageKey, JSON.stringify(state)); return true; } catch (_) { return false; }
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(state));
+          scheduleCloudSave();
+          return true;
+        } catch (_) { return false; }
       };
 
       const imageDbName = "growth-research-images-v1";
@@ -160,8 +214,27 @@
         });
       };
       const saveImage = (id, file) => withImageStore("readwrite", (store) => store.put({ id, file }));
-      const loadImage = (id) => withImageStore("readonly", (store) => store.get(id)).then((entry) => entry && entry.file);
+      const loadImage = async (id) => {
+        const local = await withImageStore("readonly", (store) => store.get(id)).then((entry) => entry && entry.file);
+        if (local || !state.media?.[id]) return local;
+        const response = await fetch(`${cloudUrl}/storage/v1/object/public/workspace-media/${encodeURIComponent(state.media[id])}`);
+        if (!response.ok) return undefined;
+        const file = await response.blob();
+        await saveImage(id, file);
+        return file;
+      };
       const deleteImage = (id) => withImageStore("readwrite", (store) => store.delete(id));
+      const uploadImage = async (id, file) => {
+        const extension = file.name.includes(".") ? file.name.split(".").pop() : "png";
+        const path = `${id}.${extension}`;
+        const response = await cloudRequest(`/storage/v1/object/workspace-media/${encodeURIComponent(path)}`, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "image/png", "x-upsert": "true" },
+          body: file
+        });
+        if (!response.ok) throw new Error("image upload failed");
+        state.media[id] = path;
+      };
       const imageId = () => `image-${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const imageIdsFor = (note) => {
         const phased = phases.flatMap((phase) => note?.imagesByPhase?.[phase.key] || []);
@@ -384,7 +457,10 @@
           save.disabled = true;
           saveState.textContent = "正在保存...";
           try {
-            await Promise.all([...pendingImages].map(([id, file]) => saveImage(id, file)));
+            await Promise.all([...pendingImages].map(async ([id, file]) => {
+              await saveImage(id, file);
+              await uploadImage(id, file);
+            }));
             const note = {};
             phases.forEach((phase) => { note[phase.key] = serializedEditor(editors.get(phase.key)); });
             const currentImageIds = new Set(imageIdsFor(note));
@@ -393,7 +469,7 @@
             if (!persist()) throw new Error("local storage unavailable");
             persistedImageIds = currentImageIds;
             pendingImages.clear();
-            saveState.textContent = "已保存到本机浏览器";
+            saveState.textContent = "已保存，正在同步云端";
             updateSummary();
           } catch (_) {
             saveState.textContent = "保存失败，请重试";
@@ -527,6 +603,14 @@
       };
       document.getElementById("export-table").addEventListener("click", exportTable);
 
+      const start = async () => {
+      try {
+        await loadCloudState();
+      } catch (_) {
+        cloudReady = false;
+        setCloudState("云端暂不可用，内容仅保存在本机");
+      }
+
       document.querySelectorAll("section.grid").forEach((section) => {
         const sectionKey = section.dataset.sectionKey;
         state.customCards[sectionKey] = state.customCards[sectionKey] || [];
@@ -555,6 +639,8 @@
         actions.append(add);
         section.insertAdjacentElement("afterend", actions);
       });
+      };
+      start();
     })();
   </script>
 </body>
