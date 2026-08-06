@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>拉新活动体验导航</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f4f6f4; color: #16221e; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 56px; }
+    header { border-bottom: 1px solid #cbd5cf; padding-bottom: 20px; }
+    h1 { font-size: 30px; letter-spacing: 0; margin: 0 0 10px; }
+    h2 { font-size: 20px; letter-spacing: 0; margin: 30px 0 10px; }
+    h3 { font-size: 17px; letter-spacing: 0; margin: 0 0 8px; }
+    p { margin: 0 0 10px; line-height: 1.6; }
+    .note { color: #4d6056; max-width: 880px; }
+    .button { border: 1px solid #276444; border-radius: 5px; color: #174e32; font-size: 14px; font-weight: 650; padding: 8px 11px; text-decoration: none; }
+    .button:hover, .button:focus { background: #e2f0e5; outline: 2px solid #91c5a1; outline-offset: 2px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(265px, 1fr)); gap: 12px; }
+    article { background: #fff; border: 1px solid #d4ddd7; border-radius: 7px; padding: 16px; min-height: 0; }
+    .meta { color: #a2501d; font-size: 13px; font-weight: 650; }
+    .observe { color: #40544a; font-size: 14px; }
+    .search { background: #f7f8f2; border-left: 3px solid #d08832; color: #4d5b53; font-size: 13px; margin-top: 12px; padding: 8px 10px; }
+    .method { border-left: 3px solid #27704b; color: #40544a; line-height: 1.65; margin: 22px 0 0; max-width: 940px; padding: 2px 0 2px 12px; }
+    .section-intro { color: #4d6056; font-size: 14px; margin-bottom: 12px; max-width: 920px; }
+    .section-actions { margin: 12px 0 2px; }
+    button { background: #fff; cursor: pointer; font: inherit; }
+    .add-card, .save-card, .delete-card { border: 1px solid #276444; border-radius: 5px; color: #174e32; font-size: 14px; font-weight: 650; padding: 8px 11px; }
+    .add-card:hover, .add-card:focus, .save-card:hover, .save-card:focus { background: #e2f0e5; outline: 2px solid #91c5a1; outline-offset: 2px; }
+    .delete-card { border-color: #a44f3c; color: #8b3426; margin-left: 8px; }
+    .reflection { border-top: 1px solid #dce4de; margin-top: 16px; }
+    .reflection summary { color: #174e32; cursor: pointer; font-size: 14px; font-weight: 650; padding: 12px 0; }
+    .reflection summary::marker { color: #27704b; }
+    .reflection summary:hover, .reflection summary:focus { color: #0b3e28; }
+    .reflection[open] summary { border-bottom: 1px solid #e2e8e3; margin-bottom: 2px; }
+    .field { display: block; color: #40544a; font-size: 13px; font-weight: 650; margin-top: 10px; }
+    .field span { display: block; margin-bottom: 5px; }
+    input, textarea { background: #fbfcfa; border: 1px solid #bfcfc3; border-radius: 4px; color: #16221e; font: inherit; font-size: 13px; line-height: 1.45; padding: 8px; width: 100%; }
+    textarea { min-height: 78px; resize: vertical; }
+    input:focus, textarea:focus { background: #fff; border-color: #28734e; outline: 2px solid #b5d5be; outline-offset: 1px; }
+    .save-state { color: #647369; display: inline-block; font-size: 12px; margin-left: 8px; }
+    .record-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .save-card[disabled] { cursor: wait; opacity: 0.65; }
+    .entry-actions { margin-top: 14px; }
+    .edit-entry { border: 1px solid #80998a; border-radius: 5px; color: #365d47; font-size: 13px; padding: 7px 10px; }
+    .edit-entry:hover, .edit-entry:focus { background: #eff5f0; outline: 2px solid #b5d5be; outline-offset: 1px; }
+    .entry-editor { border-top: 1px solid #dce4de; margin-top: 13px; padding-top: 3px; }
+    .entry-editor[hidden] { display: none; }
+    .entry-editor h4 { font-size: 14px; margin: 11px 0 2px; }
+    .entry-editor-actions { display: flex; gap: 8px; margin-top: 13px; }
+    .cancel-entry { border: 1px solid #a9b9ae; border-radius: 5px; color: #54675b; font-size: 14px; padding: 8px 11px; }
+    .export-table { border: 1px solid #276444; border-radius: 5px; color: #174e32; font-size: 14px; font-weight: 650; margin-top: 14px; padding: 8px 11px; }
+    .export-table:hover, .export-table:focus { background: #e2f0e5; outline: 2px solid #91c5a1; outline-offset: 2px; }
+    .rich-editor { background: #fbfcfa; border: 1px solid #bfcfc3; border-radius: 4px; color: #16221e; font-size: 13px; line-height: 1.5; margin-top: 5px; min-height: 112px; padding: 8px; }
+    .rich-editor:empty::before { color: #75837a; content: attr(data-placeholder); pointer-events: none; }
+    .rich-editor:focus { background: #fff; border-color: #28734e; outline: 2px solid #b5d5be; outline-offset: 1px; }
+    .rich-editor img { display: block; margin: 8px 0; max-height: 240px; max-width: 100%; object-fit: contain; }
+    .custom-fields { border-bottom: 1px solid #dce4de; padding-bottom: 13px; }
+    .custom-link.disabled, .entry-link.disabled { color: #77857b; cursor: not-allowed; pointer-events: none; }
+    .stage { background: #e6f0e8; border: 1px solid #c5d8c9; border-radius: 7px; padding: 16px 18px; }
+    ol { line-height: 1.72; margin: 0; padding-left: 21px; }
+    footer { color: #55655c; font-size: 13px; margin-top: 28px; }
+    @media (max-width: 560px) { main { width: min(100% - 24px, 1160px); padding-top: 24px; } h1 { font-size: 26px; } article { min-height: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>拉新活动体验导航</h1>
+      <p class="note">调研基准：2026-08-05。每张卡片都落到渠道、品牌和产品。按钮打开稳定的官方入口；优惠与活动以当前登录、城市、账号和库存为准。抖音、小红书、微信小程序等优先按卡片中的原生 App 搜索词进入。</p>
+      <button id="export-table" class="export-table" type="button">导出表格 CSV</button>
+    </header>
+
+    <p class="method"><strong>分类逻辑：</strong>这四组按研究工作流排列，而不是按渠道硬切。先进入品牌和品类样本，理解陌生用户的首个购买理由；再看能否把首单变成第二次行为；随后用同一商品在不同平台和大促节点中做机制对照；最后以海外成熟做法校准规则表达和留存设计。</p>
+
+    <h2>1. 品牌与品类：先研究首个购买理由</h2>
+    <p class="section-intro">从营养健康、美护和新消费品牌入手，优先记录内容种草、试用 / 入会、首个商品和首单风险解除如何连续发生。</p>
+    <section class="grid" data-section-key="brand">
+      <article><p class="meta">营养健康 / 天猫、微信</p><h3>汤臣倍健：益生菌、蛋白粉、维生素</h3><p class="observe">观察入会礼如何换联系方式、营养咨询如何降低首购犹豫，以及第 7-30 天是否按消耗周期推补货。</p><a class="button" href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">打开淘宝 / 天猫</a><p class="search">App 搜索：`汤臣倍健官方旗舰店 益生菌`<br>微信搜索：`汤臣倍健 小程序`</p></article>
+      <article><p class="meta">营养健康 / 抖音、天猫</p><h3>Swisse：维生素 C、钙片、葡萄籽</h3><p class="observe">观察成分科普能否承接到具体 SKU；直播间新人券、小规格组合和关注 / 入会券的顺序。</p><a class="button" href="https://www.swisse.com.cn/" target="_blank" rel="noopener noreferrer">打开 Swisse 官方站</a><p class="search">App 搜索：`Swisse 官方旗舰店 葡萄籽`<br>`Swisse 直播间 新人券`</p></article>
+      <article><p class="meta">营养健康 / 小红书、微信</p><h3>WonderLab：益生菌、小蓝瓶</h3><p class="observe">观察 KOC 笔记、试用装、体验盒、打卡与复购提醒是否构成连续路径。</p><a class="button" href="https://www.xiaohongshu.com/" target="_blank" rel="noopener noreferrer">打开小红书</a><p class="search">App 搜索：`WonderLab 益生菌 试用`<br>微信搜索：`WonderLab 小程序`</p></article>
+      <article><p class="meta">营养健康 / 微信、天猫</p><h3>小仙炖：鲜炖燕窝</h3><p class="observe">观察高客单和送礼场景如何用配送、包装、保质与咨询服务来减轻首单风险。</p><a class="button" href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">打开淘宝 / 天猫</a><p class="search">App 搜索：`小仙炖 鲜炖燕窝 新人`<br>微信搜索：`小仙炖`</p></article>
+      <article><p class="meta">美容护肤 / 天猫、抖音</p><h3>薇诺娜：特护霜、防晒</h3><p class="observe">重点找 0.01 元或付邮试用、敏感肌问答和直播咨询；记录试用转正装的路径。</p><a class="button" href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">打开淘宝 / 天猫</a><p class="search">App 搜索：`薇诺娜 试用装 新人`<br>`薇诺娜 特护霜 直播间`</p></article>
+      <article><p class="meta">美容护肤 / 小红书、天猫</p><h3>珀莱雅：红宝石、双抗</h3><p class="observe">对照内容种草、肤质 / 功效筛选、入门套盒、店播和小样价格锚点是否一致。</p><a class="button" href="https://www.xiaohongshu.com/" target="_blank" rel="noopener noreferrer">打开小红书</a><p class="search">App 搜索：`珀莱雅 红宝石 新人礼`<br>`珀莱雅 双抗 试用`</p></article>
+      <article><p class="meta">新消费 / 小红书、天猫</p><h3>三顿半：超即溶咖啡</h3><p class="observe">查看内容是否只推一个英雄 SKU，尝鲜盒是否自然把陌生用户带进第二次口味探索。</p><a class="button" href="https://www.xiaohongshu.com/" target="_blank" rel="noopener noreferrer">打开小红书</a><p class="search">App 搜索：`三顿半 尝鲜盒`<br>`三顿半 新人`</p></article>
+      <article><p class="meta">新消费 / 抖音、天猫</p><h3>元气森林：外星人电解质水、气泡水</h3><p class="observe">在换季 / 运动场景下，对比整箱首购、直播间福利、联名内容和第二次口味推荐。</p><a class="button" href="https://www.douyin.com/" target="_blank" rel="noopener noreferrer">打开抖音</a><p class="search">App 搜索：`元气森林 外星人 新人`<br>`元气森林 直播间`</p></article>
+    </section>
+
+    <h2>2. 激活与复购：看首单后为什么回来</h2>
+    <p class="section-intro">这些样本的共同点是存在配送、会员、上新、训练任务或成长体系，适合观察第 1、7、30 天的第二次关键行为。</p>
+    <section class="grid" data-section-key="activation">
+      <article><p class="meta">零售 / APP、微信</p><h3>盒马：水果、烘焙、即时配送</h3><p class="observe">观察定位、首单配送券、新人爆品和缺货替代规则是否在结算前就被解释清楚。</p><a class="button" href="https://www.freshippo.com/" target="_blank" rel="noopener noreferrer">打开盒马官网</a><p class="search">App 搜索：`盒马 新人专享`<br>微信搜索：`盒马鲜生`</p></article>
+      <article><p class="meta">零售 / APP、线下</p><h3>山姆：会员卡、Member's Mark</h3><p class="observe">研究付费会员怎样用家庭囤货、试吃和推荐机制完成首次价值感，而不是只卖折扣。</p><a class="button" href="https://www.samsclub.cn/" target="_blank" rel="noopener noreferrer">打开山姆官网</a><p class="search">App 搜索：`山姆 会员试用`<br>`山姆 会员推荐`</p></article>
+      <article><p class="meta">零售 / 小程序、线下</p><h3>名创优品：IP 联名盲盒、旅行用品</h3><p class="observe">联名是触及工具；看用户是否愿意为上新通知留下身份，以及积分如何驱动回访。</p><a class="button" href="https://www.miniso.com/" target="_blank" rel="noopener noreferrer">打开名创优品官网</a><p class="search">App 搜索：`名创优品 IP 联名`<br>微信搜索：`名创优品`</p></article>
+      <article><p class="meta">零售 / APP、官网</p><h3>优衣库：防晒衣、摇粒绒、UT</h3><p class="observe">换季新品和联名如何触达新客；尺码、门店库存、自提与会员提前购如何降低首次下单风险。</p><a class="button" href="https://www.uniqlo.cn/" target="_blank" rel="noopener noreferrer">打开优衣库官网</a><p class="search">App 搜索：`优衣库 防晒衣 会员`<br>`优衣库 UT 联名`</p></article>
+      <article><p class="meta">DTC / APP、小红书</p><h3>Keep：训练计划、运动装备</h3><p class="observe">把注册后的第一个运动目标视为首单：看首日任务、打卡、好友挑战和第 7 / 30 天激活。</p><a class="button" href="https://www.keep.com/" target="_blank" rel="noopener noreferrer">打开 Keep 官网</a><p class="search">App 搜索：`Keep 新人训练`<br>`Keep 好友挑战`</p></article>
+      <article><p class="meta">游戏 / 官网、APP</p><h3>原神：新手主线、冒险等级、首充</h3><p class="observe">看免费注册后多久得到第一次明确正反馈；新手任务、资源、好友与首充礼包出现的先后。</p><a class="button" href="https://genshin.hoyoverse.com/zh-cn/" target="_blank" rel="noopener noreferrer">打开原神官网</a><p class="search">App 搜索：`原神 新手攻略`<br>`原神 首充礼包`</p></article>
+    </section>
+
+    <h2>3. 平台与节点：用同一商品做机制对照</h2>
+    <p class="section-intro">在这里把同一个品类或英雄 SKU 放到不同渠道，比较 618、双11、百亿补贴、直播和私域承接中，谁更容易让新客完成首单。</p>
+    <section class="grid" data-section-key="platform">
+      <article><p class="meta">货架电商</p><h3>淘宝 / 天猫：618、双11、品类日</h3><p class="observe">选同一款益生菌或防晒，找店铺新客礼、会员入会、商品池和直播券。重点看价格承诺是否容易理解。</p><a class="button" href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">打开淘宝</a><p class="search">App 搜索：`新人礼`、`百亿补贴`、`品牌新客礼`</p></article>
+      <article><p class="meta">货架电商</p><h3>京东：618、11.11、超级品牌日</h3><p class="observe">查看新人券、低决策爆品、PLUS 试探、时效和售后承诺如何组成首单理由。</p><a class="button" href="https://www.jd.com/" target="_blank" rel="noopener noreferrer">打开京东</a><p class="search">App 搜索：`新人专享`、`百亿补贴`、`超级品牌日`</p></article>
+      <article><p class="meta">裂变 / 补贴</p><h3>拼多多：百亿补贴、多人团</h3><p class="observe">研究低价首购、邀请机制和补贴货盘。特别记录奖励的发放时点和反刷门槛。</p><a class="button" href="https://mobile.yangkeduo.com/" target="_blank" rel="noopener noreferrer">打开拼多多移动站</a><p class="search">App 搜索：`百亿补贴`、`新人专享`、`多人团`</p></article>
+      <article><p class="meta">内容 / 直播</p><h3>抖音、快手：直播间大促</h3><p class="observe">不看主播话术，专看新客券在哪领、商品与售后在哪看、不会抢券是否仍能顺畅下单。</p><a class="button" href="https://www.kuaishou.com/" target="_blank" rel="noopener noreferrer">打开快手</a><p class="search">抖音 / 快手搜索：`直播间新人福利`、`品牌自播`、`粉丝团`</p></article>
+      <article><p class="meta">内容种草</p><h3>小红书、B站：搜索和测评承接</h3><p class="observe">用同一品牌词比对笔记 / 测评与商品页：成分、价格、适用人群和购买入口是否一致。</p><a class="button" href="https://www.bilibili.com/" target="_blank" rel="noopener noreferrer">打开哔哩哔哩</a><p class="search">小红书 / B站搜索：`品牌名 试用`、`品牌名 测评`、`品牌名 直播`</p></article>
+      <article><p class="meta">私域 / 会员</p><h3>微信小程序：授权、订阅、社群</h3><p class="observe">选择薇诺娜、盒马或小仙炖：记录授权换来的权益、订阅消息频率、企微 / 群的服务价值。</p><a class="button" href="https://weixin.qq.com/" target="_blank" rel="noopener noreferrer">打开微信官网</a><p class="search">微信搜索：`薇诺娜`、`盒马鲜生`、`小仙炖`</p></article>
+    </section>
+
+    <h2>4. 海外机制校准</h2>
+    <p class="section-intro">只用于借鉴新客规则、会员回报和注册摩擦的表达方式，不将其当作内地活动的可复制结论。</p>
+    <section class="grid" data-section-key="reference">
+      <article><p class="meta">营养健康 / 跨境</p><h3>iHerb：新客折扣规则</h3><p class="observe">直接研究首购码的适用商品、例外、使用位置与限制。比起券额，更值得看规则是否清楚。</p><a class="button" href="https://information.iherb.com/hc/en-us/articles/40675330600724-New-Customer-Discount-Information" target="_blank" rel="noopener noreferrer">打开 iHerb 规则</a><p class="search">若网页拦截，以官方 App 内结算页实际规则为准。</p></article>
+      <article><p class="meta">美容护肤 / 会员</p><h3>Sephora：Beauty Insider</h3><p class="observe">免费会员、积分、奖励和生日礼是“先成为可触达会员、后促进复购”的清晰样本。</p><a class="button" href="https://www.sephora.com/BeautyInsider" target="_blank" rel="noopener noreferrer">打开 Beauty Insider</a><p class="search">观察注册后的即时回报，而不是只看会员权益列表。</p></article>
+      <article><p class="meta">游戏 / 首次激活</p><h3>Steam：创建账户</h3><p class="observe">极简获客参照：注册字段、验证、商店承接和愿望单通知，适合反观电商注册摩擦。</p><a class="button" href="https://store.steampowered.com/join" target="_blank" rel="noopener noreferrer">打开 Steam 注册</a><p class="search">再访问季节特卖页面，观察愿望单如何召回用户。</p></article>
+    </section>
+
+    <h2>四阶段观察顺序</h2>
+    <section class="stage"><ol><li>触及：从小红书 / 抖音 / B站的一个自然内容，进入品牌商品或店铺。</li><li>获客：只走到登录、授权、订阅或入会前，记录品牌拿走了什么信息、回报是什么。</li><li>首次转化：用一个试用装、小规格或英雄 SKU 加购到付款前，记录券、运费、赠品、售后和步骤数。</li><li>新人激活：第 1、7、30 天检查补货、上新、任务和服务消息是否与已看商品或消耗周期相关。</li></ol></section>
+    <footer>建议以新账号体验，并停在付款前。点击保存后，文字和截图均保存在当前浏览器；若清除浏览器网站数据，记录也会被清除。桌面端被拦截时，用卡片中的精确搜索词回到原生 App。</footer>
+  </main>
+  <script>
+    (() => {
+      const storageKey = "growth-research-notes-v2";
+      const phases = [
+        { key: "reach", label: "1. 触及", prompt: "内容 / 货架入口、首屏感受、为何愿意继续看" },
+        { key: "capture", label: "2. 获客", prompt: "品牌索取了什么身份；给了什么回报；是否愿意授权 / 入会" },
+        { key: "conversion", label: "3. 首次转化", prompt: "商品、券、运费、赠品、售后与结算感受" },
+        { key: "activation", label: "4. 新人激活", prompt: "第 1 / 7 / 30 天的触达、任务、补货或再次行动理由" }
+      ];
+
+      let state = { notes: {}, customCards: {}, cardEdits: {} };
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey));
+        if (saved && typeof saved === "object") state = { notes: saved.notes || {}, customCards: saved.customCards || {}, cardEdits: saved.cardEdits || {} };
+      } catch (_) { /* Keep the page usable when storage is unavailable. */ }
+
+      const persist = () => {
+        try { localStorage.setItem(storageKey, JSON.stringify(state)); return true; } catch (_) { return false; }
+      };
+
+      const imageDbName = "growth-research-images-v1";
+      const imageStoreName = "screenshots";
+      const openImageDb = () => new Promise((resolve, reject) => {
+        const request = indexedDB.open(imageDbName, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(imageStoreName, { keyPath: "id" });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const withImageStore = async (mode, task) => {
+        const db = await openImageDb();
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(imageStoreName, mode);
+          const request = task(transaction.objectStore(imageStoreName));
+          transaction.oncomplete = () => { db.close(); resolve(request.result); };
+          transaction.onerror = () => { db.close(); reject(transaction.error); };
+          transaction.onabort = () => { db.close(); reject(transaction.error); };
+        });
+      };
+      const saveImage = (id, file) => withImageStore("readwrite", (store) => store.put({ id, file }));
+      const loadImage = (id) => withImageStore("readonly", (store) => store.get(id)).then((entry) => entry && entry.file);
+      const deleteImage = (id) => withImageStore("readwrite", (store) => store.delete(id));
+      const imageId = () => `image-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const imageIdsFor = (note) => {
+        const phased = phases.flatMap((phase) => note?.imagesByPhase?.[phase.key] || []);
+        const embedded = phases.flatMap((phase) => [...String(note?.[phase.key] || "").matchAll(/data-image-id="([^"]+)"/g)].map((match) => match[1]));
+        return [...new Set([...(note?.images || []), ...phased, ...embedded])];
+      };
+
+      const field = (label, value, onInput, multiline = false) => {
+        const wrapper = document.createElement("label");
+        wrapper.className = "field";
+        const caption = document.createElement("span");
+        caption.textContent = label;
+        const control = document.createElement(multiline ? "textarea" : "input");
+        control.value = value || "";
+        if (multiline) control.rows = 3;
+        control.addEventListener("input", () => onInput(control.value));
+        wrapper.append(caption, control);
+        return { wrapper, control };
+      };
+
+      const addEditableEntry = (card, cardKey) => {
+        const category = card.querySelector(":scope > .meta");
+        const title = card.querySelector(":scope > h3");
+        const observe = card.querySelector(":scope > .observe");
+        const link = card.querySelector(":scope > a.button");
+        const search = card.querySelector(":scope > .search");
+        const defaults = {
+          category: category.textContent,
+          title: title.textContent,
+          observe: observe.textContent,
+          url: link.href,
+          linkLabel: link.textContent,
+          search: search.innerText
+        };
+        const applyEntry = (entry) => {
+          category.textContent = entry.category;
+          title.textContent = entry.title;
+          observe.textContent = entry.observe;
+          search.innerText = entry.search;
+          const valid = /^https?:\/\//i.test(entry.url.trim());
+          link.href = valid ? entry.url.trim() : "";
+          link.textContent = entry.linkLabel || "打开体验入口";
+          link.classList.add("entry-link");
+          link.classList.toggle("disabled", !valid);
+        };
+        const savedEntry = state.cardEdits[cardKey];
+        if (savedEntry) applyEntry({ ...defaults, ...savedEntry });
+
+        const actions = document.createElement("div");
+        actions.className = "entry-actions";
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "edit-entry";
+        edit.textContent = "编辑入口";
+        actions.append(edit);
+
+        const editor = document.createElement("section");
+        editor.className = "entry-editor";
+        editor.hidden = true;
+        const heading = document.createElement("h4");
+        heading.textContent = "修改体验入口";
+        editor.append(heading);
+        const controls = {};
+        const buildControl = (key, label, multiline = false) => {
+          const item = field(label, "", (value) => { controls[key].value = value; }, multiline);
+          controls[key] = item.control;
+          editor.append(item.wrapper);
+        };
+        buildControl("category", "渠道 / 类别");
+        buildControl("title", "入口名称、品牌或产品");
+        buildControl("observe", "观察重点", true);
+        buildControl("url", "体验链接（HTTPS）");
+        buildControl("linkLabel", "链接按钮名称");
+        buildControl("search", "App / 小程序搜索词", true);
+        const editorActions = document.createElement("div");
+        editorActions.className = "entry-editor-actions";
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "save-card";
+        save.textContent = "保存入口";
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "cancel-entry";
+        cancel.textContent = "取消";
+        editorActions.append(save, cancel);
+        editor.append(editorActions);
+        const fillEditor = () => {
+          const entry = { ...defaults, ...(state.cardEdits[cardKey] || {}) };
+          Object.entries(controls).forEach(([key, control]) => { control.value = entry[key] || ""; });
+        };
+        edit.addEventListener("click", () => {
+          fillEditor();
+          editor.hidden = false;
+          controls.category.focus();
+        });
+        cancel.addEventListener("click", () => { editor.hidden = true; });
+        save.addEventListener("click", () => {
+          const entry = Object.fromEntries(Object.entries(controls).map(([key, control]) => [key, control.value]));
+          state.cardEdits[cardKey] = entry;
+          applyEntry(entry);
+          persist();
+          editor.hidden = true;
+        });
+        card.append(actions, editor);
+      };
+
+      const addReflection = (card, cardKey) => {
+        const reflection = document.createElement("details");
+        reflection.className = "reflection";
+        const summary = document.createElement("summary");
+        const stored = state.notes[cardKey] || {};
+        const pendingImages = new Map();
+        let persistedImageIds = new Set(imageIdsFor(stored));
+        const editors = new Map();
+        const saveState = document.createElement("span");
+        saveState.className = "save-state";
+        saveState.textContent = "填写后点击保存记录";
+        const insertAtCursor = (editor, node) => {
+          const selection = window.getSelection();
+          if (selection && selection.rangeCount && editor.contains(selection.anchorNode)) {
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(node);
+            range.setStartAfter(node);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } else {
+            editor.append(node);
+          }
+        };
+        const addImage = (editor, file) => {
+          if (!file || !file.type.startsWith("image/")) return;
+          const id = imageId();
+          pendingImages.set(id, file);
+          const image = document.createElement("img");
+          image.dataset.imageId = id;
+          image.alt = "体验截图";
+          const objectUrl = URL.createObjectURL(file);
+          image.src = objectUrl;
+          image.addEventListener("load", () => URL.revokeObjectURL(objectUrl), { once: true });
+          insertAtCursor(editor, image);
+        };
+        const serializedEditor = (editor) => {
+          const copy = editor.cloneNode(true);
+          copy.querySelectorAll("img[data-image-id]").forEach((image) => image.removeAttribute("src"));
+          return copy.innerHTML;
+        };
+        const updateSummary = () => {
+          const hasRecord = [...editors.values()].some((editor) => editor.textContent.trim() || editor.querySelector("img[data-image-id]"));
+          summary.textContent = hasRecord
+            ? "查看或补充四阶段体验记录"
+            : "填写四阶段体验记录";
+        };
+        reflection.append(summary);
+        phases.forEach((phase) => {
+          const wrapper = document.createElement("label");
+          wrapper.className = "field";
+          const caption = document.createElement("span");
+          caption.textContent = `${phase.label}：${phase.prompt}`;
+          const editor = document.createElement("div");
+          editor.className = "rich-editor";
+          editor.contentEditable = "true";
+          editor.dataset.placeholder = "输入感受，或直接粘贴、拖入截图";
+          editor.innerHTML = stored[phase.key] || "";
+          const legacyIds = stored.imagesByPhase?.[phase.key] || (phase.key === "reach" ? stored.images || [] : []);
+          legacyIds.forEach((id) => {
+            if (editor.querySelector(`img[data-image-id="${id}"]`)) return;
+            const image = document.createElement("img");
+            image.dataset.imageId = id;
+            image.alt = "体验截图";
+            editor.append(image);
+          });
+          editor.addEventListener("input", () => {
+            saveState.textContent = "编辑中，点击保存记录";
+            updateSummary();
+          });
+          editor.addEventListener("paste", (event) => {
+            const files = [...event.clipboardData.items]
+              .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+              .map((item) => item.getAsFile())
+              .filter(Boolean);
+            if (!files.length) return;
+            event.preventDefault();
+            files.forEach((file) => addImage(editor, file));
+            saveState.textContent = "截图已插入，点击保存记录";
+            updateSummary();
+          });
+          editor.addEventListener("dragover", (event) => event.preventDefault());
+          editor.addEventListener("drop", (event) => {
+            const files = [...event.dataTransfer.files].filter((file) => file.type.startsWith("image/"));
+            if (!files.length) return;
+            event.preventDefault();
+            editor.focus();
+            files.forEach((file) => addImage(editor, file));
+            saveState.textContent = "截图已插入，点击保存记录";
+            updateSummary();
+          });
+          editors.set(phase.key, editor);
+          wrapper.append(caption, editor);
+          reflection.append(wrapper);
+          editor.querySelectorAll("img[data-image-id]").forEach((image) => {
+            loadImage(image.dataset.imageId).then((file) => {
+              if (!file) return;
+              const objectUrl = URL.createObjectURL(file);
+              image.src = objectUrl;
+              image.addEventListener("load", () => URL.revokeObjectURL(objectUrl), { once: true });
+            }).catch(() => undefined);
+          });
+        });
+        updateSummary();
+
+        const actions = document.createElement("div");
+        actions.className = "record-actions";
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "save-card";
+        save.textContent = "保存记录";
+        save.addEventListener("click", async () => {
+          save.disabled = true;
+          saveState.textContent = "正在保存...";
+          try {
+            await Promise.all([...pendingImages].map(([id, file]) => saveImage(id, file)));
+            const note = {};
+            phases.forEach((phase) => { note[phase.key] = serializedEditor(editors.get(phase.key)); });
+            const currentImageIds = new Set(imageIdsFor(note));
+            await Promise.all([...persistedImageIds].filter((id) => !currentImageIds.has(id)).map((id) => deleteImage(id)));
+            state.notes[cardKey] = note;
+            if (!persist()) throw new Error("local storage unavailable");
+            persistedImageIds = currentImageIds;
+            pendingImages.clear();
+            saveState.textContent = "已保存到本机浏览器";
+            updateSummary();
+          } catch (_) {
+            saveState.textContent = "保存失败，请重试";
+          } finally {
+            save.disabled = false;
+          }
+        });
+        actions.append(save, saveState);
+        reflection.append(actions);
+        card.append(reflection);
+      };
+
+      const addCustomCard = (section, cardKey, data) => {
+        const card = document.createElement("article");
+        card.dataset.cardKey = cardKey;
+        card.dataset.cardSource = "custom";
+        const fields = document.createElement("div");
+        fields.className = "custom-fields";
+        const title = document.createElement("h3");
+        title.textContent = "自定义体验入口";
+        fields.append(title);
+        const link = document.createElement("a");
+        link.className = "button custom-link disabled";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "填写链接后打开入口";
+        const update = (name, value) => {
+          data[name] = value;
+          if (name === "title") title.textContent = value || "自定义体验入口";
+          if (name === "url") {
+            const valid = /^https?:\/\//i.test(value.trim());
+            link.href = valid ? value.trim() : "";
+            link.classList.toggle("disabled", !valid);
+            link.textContent = valid ? "打开体验入口" : "填写 HTTPS 链接后打开入口";
+          }
+          persist();
+        };
+        fields.append(
+          field("渠道 / 类别", data.category, (value) => update("category", value)).wrapper,
+          field("入口名称、品牌或产品", data.title, (value) => update("title", value)).wrapper,
+          field("体验链接（HTTPS）", data.url, (value) => update("url", value)).wrapper,
+          field("App / 小程序搜索词", data.search, (value) => update("search", value)).wrapper,
+          link
+        );
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "delete-card";
+        remove.textContent = "删除此卡片";
+        remove.addEventListener("click", async () => {
+          if (!window.confirm("删除这张自定义卡片及其体验记录？")) return;
+          const list = state.customCards[section.dataset.sectionKey] || [];
+          state.customCards[section.dataset.sectionKey] = list.filter((item) => item.id !== cardKey);
+          await Promise.all(imageIdsFor(state.notes[cardKey]).map((id) => deleteImage(id).catch(() => undefined)));
+          delete state.notes[cardKey];
+          persist();
+          card.remove();
+        });
+        fields.append(remove);
+        card.append(fields);
+        section.append(card);
+        update("title", data.title || "");
+        update("url", data.url || "");
+        addReflection(card, cardKey);
+      };
+
+      const sectionNames = {
+        brand: "1. 品牌与品类：先研究首个购买理由",
+        activation: "2. 激活与复购：看首单后为什么回来",
+        platform: "3. 平台与节点：用同一商品做机制对照",
+        reference: "4. 海外机制校准"
+      };
+      const noteText = (editor) => {
+        if (!editor) return "";
+        const copy = editor.cloneNode(true);
+        copy.querySelectorAll("img").forEach((image) => image.replaceWith(document.createTextNode("[截图]")));
+        return copy.innerText.trim();
+      };
+      const csvCell = (value) => {
+        let text = String(value ?? "").replace(/\r?\n/g, "\n");
+        if (/^[=+\-@]/.test(text)) text = `'${text}`;
+        return `"${text.replace(/"/g, '""')}"`;
+      };
+      const exportTable = () => {
+        const headers = [
+          "研究分组", "入口类型", "渠道/类别", "入口/品牌/产品", "观察重点", "体验链接", "链接按钮名称", "App/小程序搜索词",
+          "触及记录", "触及截图数", "获客记录", "获客截图数", "首次转化记录", "首次转化截图数", "新人激活记录", "新人激活截图数"
+        ];
+        const rows = [headers];
+        document.querySelectorAll("section.grid").forEach((section) => {
+          const sectionKey = section.dataset.sectionKey;
+          section.querySelectorAll(":scope > article").forEach((card) => {
+            const cardKey = card.dataset.cardKey;
+            const custom = card.dataset.cardSource === "custom";
+            const customData = custom ? (state.customCards[sectionKey] || []).find((item) => item.id === cardKey) || {} : null;
+            const meta = customData || {
+              category: card.querySelector(":scope > .meta")?.textContent || "",
+              title: card.querySelector(":scope > h3")?.textContent || "",
+              observe: card.querySelector(":scope > .observe")?.textContent || "",
+              url: card.querySelector(":scope > a.button")?.href || "",
+              linkLabel: card.querySelector(":scope > a.button")?.textContent || "",
+              search: card.querySelector(":scope > .search")?.innerText || ""
+            };
+            const editors = [...card.querySelectorAll(":scope > .reflection .rich-editor")];
+            const stageCells = phases.flatMap((phase, index) => {
+              const editor = editors[index];
+              return [noteText(editor), editor?.querySelectorAll("img[data-image-id]").length || 0];
+            });
+            rows.push([
+              sectionNames[sectionKey] || sectionKey,
+              custom ? "自定义入口" : "研究样本",
+              meta.category || "",
+              meta.title || "",
+              meta.observe || "",
+              meta.url || "",
+              meta.linkLabel || "",
+              meta.search || "",
+              ...stageCells
+            ]);
+          });
+        });
+        const csv = `\ufeff${rows.map((row) => row.map(csvCell).join(",")).join("\n")}`;
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const link = document.createElement("a");
+        const objectUrl = URL.createObjectURL(blob);
+        link.href = objectUrl;
+        link.download = `拉新体验记录-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+      };
+      document.getElementById("export-table").addEventListener("click", exportTable);
+
+      document.querySelectorAll("section.grid").forEach((section) => {
+        const sectionKey = section.dataset.sectionKey;
+        state.customCards[sectionKey] = state.customCards[sectionKey] || [];
+        [...section.querySelectorAll(":scope > article")].forEach((card, index) => {
+          const cardKey = `${sectionKey}-${index}`;
+          card.dataset.cardKey = cardKey;
+          card.dataset.cardSource = "research";
+          addEditableEntry(card, cardKey);
+          addReflection(card, cardKey);
+        });
+        state.customCards[sectionKey].forEach((data) => addCustomCard(section, data.id, data));
+
+        const actions = document.createElement("div");
+        actions.className = "section-actions";
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "add-card";
+        add.textContent = "+ 增加入口";
+        add.addEventListener("click", () => {
+          const id = `${sectionKey}-custom-${Date.now()}`;
+          const data = { id, category: "", title: "", url: "", search: "" };
+          state.customCards[sectionKey].push(data);
+          persist();
+          addCustomCard(section, id, data);
+        });
+        actions.append(add);
+        section.insertAdjacentElement("afterend", actions);
+      });
+    })();
+  </script>
+</body>
+</html>
